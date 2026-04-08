@@ -25,6 +25,7 @@ object UserMapper {
             balance = this.balance,
             totalScore = this.totalScore,
             countOfHabits = this.count,
+            role = this.role,
             createdAt = this.createdAt
         )
     }

@@ -1,5 +1,6 @@
 package com.example.demo.config
 
+import com.example.demo.exeptions.CustomAccessDeniedHandler
 import com.example.demo.security.JwtRequestFilter
 import com.example.demo.security.JwtAuthenticationEntryPoint
 import org.springframework.context.annotation.Bean
@@ -26,7 +27,9 @@ import org.springframework.security.core.userdetails.UserDetailsService
 class SecurityConfig(
     private val jwtRequestFilter: JwtRequestFilter,
     private val jwtAuthenticationEntryPoint: JwtAuthenticationEntryPoint,
-    private val userDetailsService: UserDetailsService
+    private val userDetailsService: UserDetailsService,
+    private val customAccessDeniedHandler: CustomAccessDeniedHandler
+
 ) {
     @Bean
     fun filterChain(http: HttpSecurity): SecurityFilterChain {
@@ -35,6 +38,7 @@ class SecurityConfig(
             .cors { it.configurationSource(corsConfigurationSource()) }
             .exceptionHandling {
                 it.authenticationEntryPoint(jwtAuthenticationEntryPoint)
+                it.accessDeniedHandler(customAccessDeniedHandler)
             }
             .sessionManagement {
                 it.sessionCreationPolicy(SessionCreationPolicy.STATELESS)

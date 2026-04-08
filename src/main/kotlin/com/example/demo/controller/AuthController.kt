@@ -6,6 +6,7 @@ import com.example.demo.model.dto.rs.UserDto
 import com.example.demo.security.JwtTokenProvider
 import com.example.demo.security.UserPrincipal
 import com.example.demo.service.UserService
+import org.springframework.security.core.userdetails.UsernameNotFoundException
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.security.authentication.AuthenticationManager
@@ -29,27 +30,32 @@ class AuthController(
 
     @PostMapping("/register")
     fun register(@RequestBody request: JwtRequest): ResponseEntity<JwtResponse> {
-        try {
-            val user = userService.createUserFromAuth(request.name ,request.username, request.password, request.phone)
+        val user = userService.createUserFromAuth(
+            request.name ,request.username, request.password, request.phone
+        )
 
-            val authentication = authenticationManager.authenticate(
-                UsernamePasswordAuthenticationToken(request.username, request.password)
+        val authentication = authenticationManager.authenticate(
+            UsernamePasswordAuthenticationToken(
+                request.username, request.password
             )
+        )
 
-            val token = jwtTokenProvider.generateToken(authentication)
-            return ResponseEntity.ok(JwtResponse(token, request.username))
-        } catch (e: Exception) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build()
-        }
+        val token = jwtTokenProvider.generateToken(authentication)
+        return ResponseEntity.ok(JwtResponse(token, request.username))
+
     }
 
     @PostMapping("/login")
     fun login(@RequestBody request: JwtReguestLogin): ResponseEntity<JwtResponse> {
-        val authentication = authenticationManager.authenticate(
-            UsernamePasswordAuthenticationToken(request.username, request.password)
-        )
-        val token = jwtTokenProvider.generateToken(authentication)
-        return ResponseEntity.ok(JwtResponse(token, request.username))
+        try {
+            val authentication = authenticationManager.authenticate(
+                UsernamePasswordAuthenticationToken(request.username, request.password)
+            )
+            val token = jwtTokenProvider.generateToken(authentication)
+            return ResponseEntity.ok(JwtResponse(token, request.username))
+        }catch (e: Exception){
+            throw UsernameNotFoundException(e.message)
+        }
     }
 
     @GetMapping("/validate")

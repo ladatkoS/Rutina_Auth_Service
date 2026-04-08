@@ -11,7 +11,9 @@ import org.springframework.web.bind.annotation.*
 class AdminController (
     private val adminService: AdminService,
 ){
+
     @GetMapping("/allusers")
+
     fun getUsers() = adminService.getUsers()
 
     @GetMapping("info/{id}")

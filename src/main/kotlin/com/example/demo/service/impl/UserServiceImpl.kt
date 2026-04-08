@@ -1,6 +1,9 @@
 package com.example.demo.service.impl
 import com.example.demo.database.dao.UserDao
 import com.example.demo.database.entity.Users
+import com.example.demo.exeptions.HabitLimitExceededException
+import com.example.demo.exeptions.UserDoesntExistException
+import com.example.demo.exeptions.UserExistException
 import com.example.demo.model.Role
 import com.example.demo.model.dto.rs.UserDto
 import com.example.demo.model.mapper.UserMapper.toDto
@@ -17,25 +20,26 @@ class UserServiceImpl(
     private val userDao: UserDao,
     private val passwordEncoder: PasswordEncoder
 ) : UserService {
-
     override fun getUserById(id: Long): UserDto {
         return userDao.findById(id).orElseThrow {
-            RuntimeException("User not found")
+            UserDoesntExistException("Пользователь с ID $id не найден")
         }.toDto()
     }
 
     @Transactional
     override fun incrementHabitsCount(userId: Long) {
-        val user = userDao.findById(userId).orElseThrow { RuntimeException("User not found") }
+        val user = userDao.findById(userId).orElseThrow { UserDoesntExistException("Пользователь не найден") }
         if (user.count < 10) {
             user.count += 1
             userDao.save(user)
+        }else {
+            throw HabitLimitExceededException("Нельзя добавить более 10 привычек. Удалите одну из существующих.")
         }
     }
 
     @Transactional
     override fun decrementHabitsCount(userId: Long) {
-        val user = userDao.findById(userId).orElseThrow { RuntimeException("User not found") }
+        val user = userDao.findById(userId).orElseThrow { UserDoesntExistException("Пользователь не найден") }
         if (user.count > 0) {
             user.count -= 1
             userDao.save(user)
@@ -43,7 +47,7 @@ class UserServiceImpl(
     }
 
     override fun getUserByEmail(email: String): UserDto {
-        val user = userDao.findByEmail(email) ?: throw RuntimeException("User not found")
+        val user = userDao.findByEmail(email) ?: throw UserDoesntExistException("Пользователь с email $email не найден")
         return user.toDto()
     }
 
@@ -52,12 +56,12 @@ class UserServiceImpl(
         val authentication = SecurityContextHolder.getContext().authentication
         val username = authentication.name
         return userDao.findByEmail(username)
-            ?: throw RuntimeException("User not found")
+            ?: throw UserDoesntExistException("Текущий пользователь не найден")
     }
 
     override fun createUserFromAuth(name:String, username: String, password: String, phone: String): UserDto {
         if(userDao.existsByEmail(username)) {
-            throw RuntimeException("User already exists")
+            throw UserExistException("Пользователь с email $username уже зарегистрирован")
         }
 
         val user = Users(

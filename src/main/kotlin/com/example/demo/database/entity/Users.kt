@@ -35,4 +35,5 @@ data class Users(
 
     @Column(name = "role")
     var role: Role = USER,
-) : AbstractEntity()
+) : AbstractEntity() {
+}
