@@ -372,9 +372,3 @@ spring:
 | Neural Network | 8000 | [Rutina NN](https://github.com/AntonSlon/Rutina-neural-network.git) |
 
 ---
-
-## Автор
-
-**Савелий Ладатко**
-- GitHub: [@ladatkoS](https://github.com/ladatkoS)
-- Проект: [Rutina Auth Service](https://github.com/ladatkoS/Rutina_Auth_Service)
